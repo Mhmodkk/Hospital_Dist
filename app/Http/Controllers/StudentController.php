@@ -22,15 +22,19 @@ class StudentController extends Controller
         return view('students.create', compact('departments'));
     }
 
+    // التعديل هنا لاستقبال التاريخ يدوياً
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
         DB::transaction(function () use ($request) {
             $student = Student::create(['name' => $request->name]);
 
+            // البحث عن أول قسم متاح يحوي سعة
             $availableSection = Section::all()->filter(function ($section) {
                 $currentCount = Rotation::where('section_id', $section->id)
                     ->where('is_active', true)
@@ -42,14 +46,14 @@ class StudentController extends Controller
                 Rotation::create([
                     'student_id' => $student->id,
                     'section_id' => $availableSection->id,
-                    'start_date' => now()->startOfMonth(),
-                    'end_date' => now()->endOfMonth(),
+                    'start_date' => $request->start_date, // القيمة اليدوية من الفورم
+                    'end_date' => $request->end_date,     // القيمة اليدوية من الفورم
                     'is_active' => true,
                 ]);
             }
         });
 
-        return redirect()->route('students.index')->with('success', 'تم إضافة الطالب وتوزيعه حسب السعة المتاحة.');
+        return redirect()->route('students.index')->with('success', 'تم إضافة الطالب وتوزيعه بالتواريخ المختارة.');
     }
 
     public function destroy(Student $student)
