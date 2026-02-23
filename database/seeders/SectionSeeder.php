@@ -9,11 +9,17 @@ class SectionSeeder extends Seeder
 {
     public function run(): void
     {
-        Section::create(['name' => 'الإسعاف', 'capacity' => 20]);
-        Section::create(['name' => 'صدرية', 'capacity' => 4]);
-        Section::create(['name' => 'عامة', 'capacity' => 4]);
-        Section::create(['name' => 'عصبية', 'capacity' => 4]);
-        Section::create(['name' => 'هضمية', 'capacity' => 4]);
-        Section::create(['name' => 'عناية', 'capacity' => 12]);
+        $sections = [
+            ['name' => 'الإسعاف', 'capacity' => 20],
+            ['name' => 'صدرية', 'capacity' => 4],
+            ['name' => 'عامة', 'capacity' => 4],
+            ['name' => 'عصبية', 'capacity' => 4],
+            ['name' => 'هضمية', 'capacity' => 4],
+            ['name' => 'عناية', 'capacity' => 12],
+        ];
+
+        foreach ($sections as $section) {
+            Section::updateOrCreate(['name' => $section['name']], $section);
+        }
     }
 }
