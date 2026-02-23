@@ -1,17 +1,10 @@
 FROM php:8.2-cli
 
+# تثبيت الاعتمادات و Node.js في خطوة واحدة
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    unzip \
-    zip \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libsodium-dev \
-    default-mysql-client \
-    default-libmysqlclient-dev
+    git curl unzip zip libpng-dev libonig-dev libxml2-dev libzip-dev libsodium-dev \
+    default-mysql-client default-libmysqlclient-dev \
+    nodejs npm && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install pdo_mysql mbstring bcmath zip
 
@@ -19,8 +12,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 COPY . .
-RUN apt-get install -y nodejs npm
+
+# تثبيت المكتبات وبناء ملفات التنسيق
 RUN composer install --optimize-autoloader
 RUN npm install && npm run build
+
+# إعطاء صلاحيات الكتابة لمجلدات لارافيل
+RUN chmod -R 777 storage bootstrap/cache
 
 CMD php artisan migrate --force && php artisan db:seed --class=SectionSeeder --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
