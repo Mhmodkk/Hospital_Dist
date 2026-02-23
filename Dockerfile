@@ -19,7 +19,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 COPY . .
-
+RUN apt-get install -y nodejs npm
 RUN composer install --optimize-autoloader
+RUN npm install && npm run build
 
 CMD php artisan migrate --force && php artisan db:seed --class=SectionSeeder --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
